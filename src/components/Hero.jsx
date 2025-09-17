@@ -1,49 +1,72 @@
 import { useGSAP } from "@gsap/react";
 import { SplitText } from "gsap/all";
 import gsap from "gsap";
-import React from "react";
+import React, { useRef } from "react";
+import { useMediaQuery } from "react-responsive";
 
 const Hero = () => {
+  const videoRef = useRef();
+
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+
   useGSAP(() => {
     const heroSplit = new SplitText(".title", { type: "chars words" });
     const paragraphSplit = new SplitText(".subtitle", { type: "lines" });
 
-    heroSplit.chars.forEach((char) => char.classList.add('text-gradient'))
+    heroSplit.chars.forEach((char) => char.classList.add("text-gradient"));
 
     gsap.from(heroSplit.chars, {
-        opacity: 0,
-        yPercent: 100,
-        duration: 1,
-        ease: "expo.out",
-        stagger: 0.05
-    })
+      opacity: 0,
+      yPercent: 100,
+      duration: 1,
+      ease: "expo.out",
+      stagger: 0.05,
+    });
 
     gsap.from(paragraphSplit.lines, {
-        opacity: 0,
-        yPercent: 100,
-        duration: 1.8,
-        ease: "expo.out",
-        stagger: 0.06,
-        delay: 1
-    })
+      opacity: 0,
+      yPercent: 100,
+      duration: 1.8,
+      ease: "expo.out",
+      stagger: 0.06,
+      delay: 1,
+    });
 
     let tl = gsap.timeline({
-        scrollTrigger: {
-            trigger: '#hero',
-            start: 'top top',
-            end: 'bottom top',
-            scrub: true
-        }
-    })
-    tl.to('.right-leaf', {y: 200}, 0)
-    tl.to('.left-leaf', {y: -200}, 0)
-  }, []);
+      scrollTrigger: {
+        trigger: "#hero",
+        start: "top top",
+        end: "bottom top",
+        scrub: true,
+      },
+    });
+    tl.to(".right-leaf", { y: 200 }, 0);
+    tl.to(".left-leaf", { y: -200 }, 0);
 
+    const startValue = isMobile ? "top 50%" : "center 60%";
+    const endValue = isMobile ? "120% top" : "bottom top";
+
+    const videoTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: "#video",
+        start: startValue,
+        end: endValue,
+        scrub: true,
+        pin: true,
+      },
+    });
+
+    videoRef.current.onloadedmetadata = () => {
+      videoTl.to(videoRef.current, {
+        currentTime: videoRef.current.duration,
+      });
+    };
+  }, []);
 
   return (
     <>
       <section id="hero" className="noisy">
-        <h1 className="title"> MOJITO</h1>
+        <h1 className="title">MOJITO</h1>
         <img
           src="/images/hero-left-leaf.png"
           alt="left-p"
@@ -75,6 +98,16 @@ const Hero = () => {
           </div>
         </div>
       </section>
+      <div className="video absolute inset-0">
+        <video
+          id="video"
+          ref={videoRef}
+          src="/videos/output.mp4"
+          muted
+          playsInline
+          preload="auto"
+        />
+      </div>
     </>
   );
 };
